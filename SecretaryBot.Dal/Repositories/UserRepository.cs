@@ -6,50 +6,45 @@ using SecretaryBot.Domain.Models;
 
 namespace SecretaryBot.Dal.Repositories
 {
-    public class UserRepository : DbContext, IUserRepository
+    public class UserRepository(IMapper mapper, PostgresContext context) : IUserRepository
     {
-        private readonly IMapper _mapper;
-        private DbSet<DalUser> Users { get; set; }
-
-        public UserRepository(DbContextOptions<UserRepository> options, IMapper mapper) : base(options)
-        {
-            _mapper = mapper;
-        }
+        private readonly IMapper _mapper = mapper;
+        private readonly PostgresContext _context = context;
 
         public async Task AddUserAsync(User user)
         {
-            var currentUser = await Users.FirstOrDefaultAsync(x => x.TelegramId == user.TelegramId);
+            var currentUser = await _context.Users.FirstOrDefaultAsync(x => x.TelegramId == user.TelegramId);
             if (currentUser != null)
                 return;
 
             var dalUser = _mapper.Map<DalUser>(user);
-            Users.Add(dalUser);
-            await SaveChangesAsync();
+            _context.Users.Add(dalUser);
+            await _context.SaveChangesAsync();
         }
 
         public async Task ChangeAccessAsync(long telegramId)
         {
-            var user = await Users.FirstOrDefaultAsync(x => x.TelegramId == telegramId);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.TelegramId == telegramId);
             if (user != null)
             {
                 user.HasAccess = !user.HasAccess;
-                await SaveChangesAsync();
+                await _context.SaveChangesAsync();
             }
         }
 
         public async Task<bool> CheckAccessAsync(long telegramId)
         {
-            var user = await Users.FirstOrDefaultAsync(x => x.TelegramId == telegramId);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.TelegramId == telegramId);
             return user != null && user.HasAccess;
         }
 
         public async Task GiveAccessAsync(long telegramId)
         {
-            var user = await Users.FirstOrDefaultAsync(x => x.TelegramId == telegramId);
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.TelegramId == telegramId);
             if (user is null)
                 return;
             user.HasAccess = !user.HasAccess;
-            await SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
     }
 }

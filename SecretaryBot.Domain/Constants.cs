@@ -27,9 +27,7 @@ namespace SecretaryBot.Domain
             new() { IsActive = true, Name = "Здоровье/аптека" },
             new() { IsActive = true, Name = "Подписки" },
             new() { IsActive = true, Name = "Прочее" }
-        ];
-
-        
+        ];        
 
         #region Documentation
         private const string StartDocumentation = "/start - Получить приветственное сообщение";

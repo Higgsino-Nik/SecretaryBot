@@ -14,8 +14,8 @@ namespace SecretaryBot.Bll.Services
             await _userRepository.AddUserAsync(user);
         }
 
-        public async Task<bool> HasAccessAsync(long userId) => await _userRepository.CheckAccessAsync(userId);
+        public Task<bool> HasAccessAsync(long userId) => _userRepository.CheckAccessAsync(userId);
 
-        public async Task ChangeAccessAsync(long userId) => await _userRepository.ChangeAccessAsync(userId);
+        public Task ChangeAccessAsync(long userId) => _userRepository.ChangeAccessAsync(userId);
     }
 }

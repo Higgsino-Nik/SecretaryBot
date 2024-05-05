@@ -2,7 +2,8 @@
 {
     public interface ICacheService
     {
-        void AddLastCommand(long userId, string command);
+        void SetLastCommand(long userId, string command);
         string? GetLastCommand(long userId);
+        string? PopLastCommand(long userId);
     }
 }

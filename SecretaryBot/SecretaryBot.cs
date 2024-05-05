@@ -2,9 +2,9 @@
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SecretaryBot.Domain;
-using SecretaryBot.Domain.Abstractions.Repositories;
+using SecretaryBot.Domain.Abstractions;
+using SecretaryBot.Domain.Exceptions;
 using SecretaryBot.Domain.Models;
-using System.Text.Json;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -16,9 +16,9 @@ namespace SecretaryBot
     {
         private readonly ITelegramBotClient _bot;
         private readonly CommandsController _commandController;
-        private readonly IDbLogger _logger;
+        private readonly ICustomLogger _logger;
 
-        public SecretaryBot(IConfiguration configuration, CommandsController commandsFactory, IDbLogger logger)
+        public SecretaryBot(IConfiguration configuration, CommandsController commandsFactory, Domain.Abstractions.ICustomLogger logger)
         {
             _commandController = commandsFactory;
             _logger = logger;
@@ -50,6 +50,10 @@ namespace SecretaryBot
                 };
                 await AnswerToMessageAsync(message);
             }
+            catch (BadCommandRequestException ex)
+            {
+                await bot.SendTextMessageAsync(update.Message?.Chat ?? update.CallbackQuery.Message.Chat, ex.Message);
+            }
             catch (Exception ex)
             {
                 await _logger.WriteLogAsync(LogLevel.Error, "Error while handling update message: " + ex.Message);
@@ -59,18 +63,13 @@ namespace SecretaryBot
 
         public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            // Некоторые действия
-
             await _logger.WriteLogAsync(LogLevel.Error, "Error received: " + exception.Message);
-            Console.WriteLine(JsonSerializer.Serialize(exception));
-            return;
+            Environment.Exit(-1);
         }
 
         private async Task AnswerToMessageAsync(TelegramMessage message)
         {
-            var response = message.Text.StartsWith('/')
-                ? await _commandController.ResponseCommandAsync(message)
-                : await _commandController.SendParameterToLastCommandAsync(message);
+            var response = await _commandController.ResponseCommandAsync(message);
 
             if (response.Buttons.Count > 0)
             {

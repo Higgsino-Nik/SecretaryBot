@@ -1,17 +1,12 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Logging;
 using SecretaryBot.Dal.Models;
-using SecretaryBot.Domain.Abstractions.Repositories;
+using SecretaryBot.Domain.Abstractions;
 
 namespace SecretaryBot.Dal.Repositories
 {
-    public class DbLogger : DbContext, IDbLogger
+    public class DbLogger(PostgresContext context) : ICustomLogger
     {
-        private DbSet<DalLog> Logs { get; set; }
-
-        public DbLogger(DbContextOptions<DbLogger> options) : base(options)
-        {
-        }
+        private readonly PostgresContext _context = context;
 
         public async Task Error(string message)
         {
@@ -25,13 +20,13 @@ namespace SecretaryBot.Dal.Repositories
 
         public async Task WriteLogAsync(LogLevel level, string message)
         {
-            Logs.Add(new DalLog
+            _context.Logs.Add(new DalLog
             {
                 Level = level.ToString(),
                 Message = message,
                 LogDateTime = DateTime.Today
             });
-            await SaveChangesAsync();
+            await _context.SaveChangesAsync();
         }
     }
 }

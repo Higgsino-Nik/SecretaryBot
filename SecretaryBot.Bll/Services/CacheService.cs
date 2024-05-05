@@ -8,10 +8,12 @@ namespace SecretaryBot.Bll.Services
         private readonly IMemoryCache _cache = cache;
         private const int CacheExpirationMinutes = 15;
 
-        public void AddLastCommand(long userId, string command) =>
+        public void SetLastCommand(long userId, string command) =>
             _cache.Set(userId, command, DateTimeOffset.Now.AddMinutes(CacheExpirationMinutes));
 
-        public string? GetLastCommand(long userId)
+        public string? GetLastCommand(long userId) => _cache.Get<string>(userId);
+
+        public string? PopLastCommand(long userId)
         {
             var lastCommand = _cache.Get<string>(userId);
             _cache.Set(userId, string.Empty);
