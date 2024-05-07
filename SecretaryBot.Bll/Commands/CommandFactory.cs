@@ -15,7 +15,6 @@ namespace SecretaryBot.Bll.Commands
         public ICommand CreateCommand(string commandText)
         {
             var baseCommand = commandText.Split('\\')[0];
-            var a = _serviceProvider.GetServices<ICommand>();
             var command = _serviceProvider.GetServices<ICommand>().FirstOrDefault(x => x.CallBack.Equals(baseCommand));
             return command is null
                 ? throw new BadCommandRequestException("Команда не найдена")
