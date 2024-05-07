@@ -1,19 +1,19 @@
 ﻿using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Abstractions.Services;
-using SecretaryBot.Domain.Attributes;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Exceptions;
 using SecretaryBot.Domain.Models;
 
 namespace SecretaryBot.Bll.Commands.Category
 {
-    [CommandScope(CommandScope.Category)]
-    [CommandDisplayName("Удалить категорию")]
-    [CommandCallback("/deletecategory")]
     public class DeleteCategoryCommand(ICustomLogger logger, ICategoryService categoryService) : ICommand
     {
         private readonly ICustomLogger _logger = logger;
         private readonly ICategoryService _categoryService = categoryService;
+
+        public CommandScope Scope => CommandScope.Category;
+        public string DisplayName => "Удалить категорию";
+        public string CallBack => "/deletecategory";
 
         public Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
@@ -30,7 +30,7 @@ namespace SecretaryBot.Bll.Commands.Category
         {
             await _logger.Info($"Received DeleteCategoryAsync. UserId: {userId}");
             var categories = await _categoryService.GetCategoriesListAsync(userId);
-            var buttons = categories.Select(x => new KeyboardButton { Text = x.Name, CallBackMessage = "/deletecategory\\" + x.Id });
+            var buttons = categories.Select(x => new KeyboardButton { Text = x.Name, CallBackMessage = CallBack + "\\" + x.Id });
             return new CommandResult("Выберите категорию, которую хотите удалить", buttons);
         }
 

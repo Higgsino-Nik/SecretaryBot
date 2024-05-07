@@ -38,7 +38,7 @@ namespace SecretaryBot.Bll.Services
             return "Дефолтные категории были успешно добавлены! \n\n" + await GetCategoriesAsync(userId);
         }
 
-        public async Task<Category> GetCategory(int id) => await _categoryRepository.GetCategoryAsync(id);
+        public Task<Category> GetCategory(int id) => _categoryRepository.GetCategoryAsync(id);
 
         public async Task<string> GetCategoriesAsync(long userId) =>
             "Активные категории:\n" + string.Join("\n",

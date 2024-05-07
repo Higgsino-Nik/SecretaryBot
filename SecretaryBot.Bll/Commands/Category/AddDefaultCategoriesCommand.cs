@@ -1,18 +1,18 @@
 ﻿using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Abstractions.Services;
-using SecretaryBot.Domain.Attributes;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Models;
 
 namespace SecretaryBot.Bll.Commands.Category
 {
-    [CommandScope(CommandScope.Category)]
-    [CommandDisplayName("Добавить категории по умолчанию")]
-    [CommandCallback("/adddefaultcategories")]
     public class AddDefaultCategoriesCommand(ICustomLogger logger, ICategoryService categoryService) : ICommand
     {
         private readonly ICustomLogger _logger = logger;
         private readonly ICategoryService _categoryService = categoryService;
+
+        public CommandScope Scope => CommandScope.Category;
+        public string DisplayName => "Добавить категории по умолчанию";
+        public string CallBack => "/adddefaultcategories";
 
         public async Task<CommandResult> InvokeAsync(TelegramMessage message)
         {

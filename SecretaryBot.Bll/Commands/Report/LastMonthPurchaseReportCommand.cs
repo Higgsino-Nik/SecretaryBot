@@ -1,18 +1,18 @@
 ﻿using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Abstractions.Services;
-using SecretaryBot.Domain.Attributes;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Models;
 
 namespace SecretaryBot.Bll.Commands.Report
 {
-    [CommandScope(CommandScope.Report)]
-    [CommandDisplayName("Отчет по тратам, прошлый месяц")]
-    [CommandCallback("/lastmonthpurchasereport")]
     public class LastMonthPurchaseReportCommand(ICustomLogger logger, IReportService reportService) : ICommand
     {
         private readonly ICustomLogger _logger = logger;
         private readonly IReportService _reportService = reportService;
+
+        public CommandScope Scope => CommandScope.Report;
+        public string DisplayName => "Отчет по тратам, прошлый месяц";
+        public string CallBack => "/lastmonthpurchasereport";
 
         public async Task<CommandResult> InvokeAsync(TelegramMessage message)
         {

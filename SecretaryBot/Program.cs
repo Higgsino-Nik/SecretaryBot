@@ -55,7 +55,8 @@ namespace SecretaryBot
 
             foreach (var impl in commandImplementations)
             {
-                services.AddTransient(impl);
+                services.AddScoped(commandType, impl);
+                services.AddScoped(impl);
             }
                 
 

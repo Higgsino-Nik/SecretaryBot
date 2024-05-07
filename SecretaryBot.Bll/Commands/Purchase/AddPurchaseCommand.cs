@@ -1,21 +1,21 @@
 ﻿using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Abstractions.Services;
-using SecretaryBot.Domain.Attributes;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Exceptions;
 using SecretaryBot.Domain.Models;
 
 namespace SecretaryBot.Bll.Commands.Purchase
 {
-    [CommandScope(CommandScope.Purchase)]
-    [CommandDisplayName("Зафиксировать трату")]
-    [CommandCallback("/addpurchase")]
     public class AddPurchaseCommand(ICustomLogger logger, ICacheService cacheService, ICategoryService categoryService, IPurchaseService purchaseService) : ICommand
     {
         private readonly ICustomLogger _logger = logger;
         private readonly ICacheService _cacheService = cacheService;
         private readonly ICategoryService _categoryService = categoryService;
         private readonly IPurchaseService _purchaseService = purchaseService;
+
+        public CommandScope Scope => CommandScope.Purchase;
+        public string DisplayName => "Зафиксировать трату";
+        public string CallBack => "/addpurchase";
 
         public Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
@@ -31,16 +31,16 @@ namespace SecretaryBot.Bll.Commands.Purchase
 
         private async Task<CommandResult> DisplayCategories(long userId)
         {
-            await _logger.Info($"Received AddPurchaseAsync. UserId: {userId}");
+            await _logger.Info($"Received AddPurchaseAsync DisplayCategories. UserId: {userId}");
             var categories = await _categoryService.GetCategoriesListAsync(userId);
-            var buttons = categories.Select(x => new KeyboardButton { Text = x.Name, CallBackMessage = "/addpurchase\\" + x.Id });
+            var buttons = categories.Select(x => new KeyboardButton { Text = x.Name, CallBackMessage = CallBack + "\\" + x.Id });
             return new CommandResult("Выберите категорию", buttons);
         }
 
         private async Task<CommandResult> RequestAmountInput(TelegramMessage message, int categoryId)
         {
-            await _logger.Info($"Received AddPurchaseAsync. UserId: {message.UserId}");
-            _cacheService.SetLastCommand(message.UserId, "/addpurchase\\" + categoryId);
+            await _logger.Info($"Received AddPurchaseAsync RequestAmountInput. UserId: {message.UserId}");
+            _cacheService.SetLastCommand(message.UserId, CallBack + "\\" + categoryId);
             return new CommandResult("Введите ЦЕЛОЕ ЧИСЛО - сумма совершенной траты");
         }
 

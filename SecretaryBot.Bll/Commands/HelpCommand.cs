@@ -1,15 +1,17 @@
 ﻿using SecretaryBot.Domain;
 using SecretaryBot.Domain.Abstractions;
-using SecretaryBot.Domain.Attributes;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Models;
 
 namespace SecretaryBot.Bll.Commands
 {
-    [CommandScope(CommandScope.None)]
     public class HelpCommand(ICustomLogger logger) : ICommand
     {
         private readonly ICustomLogger _logger = logger;
+
+        public CommandScope Scope => CommandScope.None;
+        public string DisplayName => "Справочная информация";
+        public string CallBack => "/help";
 
         public async Task<CommandResult> InvokeAsync(TelegramMessage message)
         {

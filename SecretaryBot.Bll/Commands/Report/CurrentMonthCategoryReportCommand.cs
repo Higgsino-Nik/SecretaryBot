@@ -1,20 +1,20 @@
 ﻿using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Abstractions.Services;
-using SecretaryBot.Domain.Attributes;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Exceptions;
 using SecretaryBot.Domain.Models;
 
 namespace SecretaryBot.Bll.Commands.Report
 {
-    [CommandScope(CommandScope.Report)]
-    [CommandDisplayName("Отчет по категории, текущий месяц")]
-    [CommandCallback("/currentmonthcategoryreport")]
     public class CurrentMonthCategoryReportCommand(ICustomLogger logger, ICategoryService categoryService, IReportService reportService) : ICommand
     {
         private readonly ICustomLogger _logger = logger;
         private readonly ICategoryService _categoryService = categoryService;
         private readonly IReportService _reportService = reportService;
+
+        public CommandScope Scope => CommandScope.Report;
+        public string DisplayName => "Отчет по категории, текущий месяц";
+        public string CallBack => "/currentmonthcategoryreport";
 
         public Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
@@ -31,7 +31,7 @@ namespace SecretaryBot.Bll.Commands.Report
         {
             await _logger.Info($"Received CurrentMonthCategoryReportAsync. UserId: {userId}");
             var categories = await _categoryService.GetCategoriesListAsync(userId);
-            var buttons = categories.Select(x => new KeyboardButton { Text = x.Name, CallBackMessage = "/currentmonthcategoryreport\\" + x.Id });
+            var buttons = categories.Select(x => new KeyboardButton { Text = x.Name, CallBackMessage = CallBack + "\\" + x.Id });
             return new CommandResult("Выберите категорию", buttons);
         }
 

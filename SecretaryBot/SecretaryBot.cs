@@ -83,14 +83,8 @@ namespace SecretaryBot
             }
         }
 
-        public async Task StartAsync(CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
-        }
+        public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
 
-        public async Task StopAsync(CancellationToken cancellationToken)
-        {
-            await Task.CompletedTask;
-        }
+        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
     }
 }

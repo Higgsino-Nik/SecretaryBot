@@ -1,20 +1,20 @@
 ﻿using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Abstractions.Services;
-using SecretaryBot.Domain.Attributes;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Exceptions;
 using SecretaryBot.Domain.Models;
 
 namespace SecretaryBot.Bll.Commands.Category
 {
-    [CommandScope(CommandScope.Category)]
-    [CommandDisplayName("Добавить категорию")]
-    [CommandCallback("/addcategory")]
     public class AddCategoryCommand(ICustomLogger logger, ICategoryService categoryService, ICacheService cacheService) : ICommand
     {
         private readonly ICustomLogger _logger = logger;
         private readonly ICategoryService _categoryService = categoryService;
         private readonly ICacheService _cacheService = cacheService;
+
+        public string DisplayName => "Добавить категорию";
+        public string CallBack => "/addcategory";
+        public CommandScope Scope => CommandScope.Category;
 
         public Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
@@ -30,7 +30,7 @@ namespace SecretaryBot.Bll.Commands.Category
         private async Task<CommandResult> RequestNameInput(long userId)
         {
             await _logger.Info($"Received AddCategory. UserId: {userId}");
-            _cacheService.SetLastCommand(userId, "/addcategory");
+            _cacheService.SetLastCommand(userId, CallBack);
             return new CommandResult("Введите название новой категории");
         }
 
