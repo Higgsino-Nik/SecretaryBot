@@ -45,6 +45,7 @@ namespace SecretaryBot.Dal.Repositories
             return await _context.Purchases.Include(x => x.Category)
                 .Where(x => x.Category.Id == categoryId && x.PurchaseDateTime >= startDate && x.PurchaseDateTime <= endDate)
                 .GroupBy(x => x.PurchaseDateTime.Date)
+                .OrderBy(x => x.Key)
                 .Select(x => new ReportRow { Name = x.Key.ToShortDateString(), Amount = x.Sum(p => p.Amount) })
                 .ToListAsync();
         }
