@@ -2,6 +2,7 @@
 using SecretaryBot.Domain.Abstractions.Repositories;
 using SecretaryBot.Domain.Abstractions.Services;
 using SecretaryBot.Domain.Models;
+using SecretaryBot.Domain.Texts;
 
 namespace SecretaryBot.Bll.Services
 {
@@ -29,24 +30,29 @@ namespace SecretaryBot.Bll.Services
                 return null;
             }
 
-            var defaultCategories = Constants.GetDefaultCategories();
-            foreach (var category in defaultCategories)
+            foreach (var categoryName in DefaultCategoryNames.All)
             {
-                category.UserTelegramId = userId;
+                var category = new Category
+                {
+                    IsActive = true,
+                    Name = categoryName,
+                    UserTelegramId = userId
+                };
+
                 await _categoryRepository.AddCategoryAsync(category);
             }
             return "Дефолтные категории были успешно добавлены! \n\n" + await GetCategoriesAsync(userId);
         }
 
-        public Task<Category> GetCategory(int id) => _categoryRepository.GetCategoryAsync(id);
+        public Task<Category?> GetCategory(int id) => _categoryRepository.GetCategoryAsync(id);
 
         public async Task<string> GetCategoriesAsync(long userId) =>
             "Активные категории:\n" + string.Join("\n",
                 (await _categoryRepository.GetActiveCategoriesAsync(userId))
                 .Select(x => x.Name));
 
-        public async Task<List<Category>> GetCategoriesListAsync(long userId) =>
-            await _categoryRepository.GetActiveCategoriesAsync(userId);
+        public Task<List<Category>> GetCategoriesListAsync(long userId) =>
+            _categoryRepository.GetActiveCategoriesAsync(userId);
 
         public async Task<string> DeleteCategoryAsync(long userId, int categoryId)
         {

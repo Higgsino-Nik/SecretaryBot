@@ -12,11 +12,11 @@ namespace SecretaryBot.Bll.Commands.Report
         public string DisplayName => "Отчеты";
         public string CallBack => "/report";
 
-        public async Task<CommandResult> InvokeAsync(TelegramMessage message)
+        public Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
             var reportCommands = _commandFactory.GetCommands(CommandScope.Report);
-            var buttons = await Task.Run(() => reportCommands.Select(command => new KeyboardButton { Text = command.DisplayName, CallBackMessage = command.CallBack }));
-            return new CommandResult("Отчеты", buttons);
+            var buttons = reportCommands.Select(command => new KeyboardButton { Text = command.DisplayName, CallBackMessage = command.CallBack });
+            return Task.FromResult(new CommandResult("Отчеты", buttons));
         }
     }
 }

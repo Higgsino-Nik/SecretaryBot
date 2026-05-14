@@ -5,9 +5,9 @@ namespace SecretaryBot.Domain.Abstractions
 {
     public interface ICommand
     {
-        abstract CommandScope Scope { get; }
-        abstract string DisplayName { get; }
-        abstract string CallBack { get; }
+        CommandScope Scope { get; }
+        string DisplayName { get; }
+        string CallBack { get; }
 
         Task<CommandResult> InvokeAsync(TelegramMessage message);
     }

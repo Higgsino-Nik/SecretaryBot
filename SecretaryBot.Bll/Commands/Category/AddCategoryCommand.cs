@@ -1,4 +1,5 @@
-﻿using SecretaryBot.Domain.Abstractions;
+﻿using SecretaryBot.Domain;
+using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Abstractions.Services;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Exceptions;
@@ -18,7 +19,7 @@ namespace SecretaryBot.Bll.Commands.Category
 
         public Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
-            var commandChain = message.Text.Split('\\');
+            var commandChain = message.Text.Split(Constants.CommandInputSeparator);
             return commandChain.Length switch
             {
                 1 => RequestNameInput(message.UserId),
@@ -29,15 +30,16 @@ namespace SecretaryBot.Bll.Commands.Category
 
         private async Task<CommandResult> RequestNameInput(long userId)
         {
-            await _logger.Info($"Received AddCategory. UserId: {userId}");
+            await _logger.InfoAsync($"Received AddCategory. UserId: {userId}");
             _cacheService.SetLastCommand(userId, CallBack);
             return new CommandResult("Введите название новой категории");
         }
 
         private async Task<CommandResult> AddCategory(long userId, string name)
         {
-            await _logger.Info($"Received parameter for command addcategory. User id: {userId}");
+            await _logger.InfoAsync($"Received parameter for command addcategory. User id: {userId}");
             var responseMessage = await _categoryService.AddCategoryAsync(userId, name);
+            _cacheService.ClearLastCommand(userId);
             return new CommandResult(responseMessage);
         }
     }

@@ -1,4 +1,5 @@
-﻿using SecretaryBot.Domain.Abstractions;
+﻿using SecretaryBot.Domain;
+using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Abstractions.Services;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Exceptions;
@@ -17,28 +18,36 @@ namespace SecretaryBot.Bll.Commands.Category
 
         public Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
-            var commandChain = message.Text.Split('\\');
-            return commandChain.Length switch
+            var commandChain = message.Text.Split(Constants.CommandInputSeparator);
+            switch (commandChain.Length)
             {
-                1 => DisplayCategories(message.UserId),
-                2 => DeleteCategory(message, int.Parse(commandChain[1])),
-                _ => throw new BadCommandRequestException("Неправильное использование команды")
-            };
+                case 1:
+                    return DisplayCategories(message.UserId);
+                case 2:
+                    if (!TryParseCategoryId(commandChain[1], out var categoryId))
+                        return Task.FromResult(new CommandResult("Некорректный идентификатор категории"));
+                    return DeleteCategory(message, categoryId);
+                default:
+                    throw new BadCommandRequestException("Неправильное использование команды");
+            }
         }
 
         private async Task<CommandResult> DisplayCategories(long userId)
         {
-            await _logger.Info($"Received DeleteCategoryAsync. UserId: {userId}");
+            await _logger.InfoAsync($"Received DeleteCategoryAsync. UserId: {userId}");
             var categories = await _categoryService.GetCategoriesListAsync(userId);
-            var buttons = categories.Select(x => new KeyboardButton { Text = x.Name, CallBackMessage = CallBack + "\\" + x.Id });
+            var buttons = categories.Select(x => new KeyboardButton { Text = x.Name, CallBackMessage = CallBack + Constants.CommandInputSeparator + x.Id });
             return new CommandResult("Выберите категорию, которую хотите удалить", buttons);
         }
 
         private async Task<CommandResult> DeleteCategory(TelegramMessage message, int categoryId)
         {
-            await _logger.Info($"Received parameter for command deletecategory. User id: {message.UserId}");
+            await _logger.InfoAsync($"Received parameter for command deletecategory. User id: {message.UserId}");
             var responseMessage = await _categoryService.DeleteCategoryAsync(message.UserId, categoryId);
             return new CommandResult(responseMessage);
         }
+
+        private static bool TryParseCategoryId(string value, out int categoryId) =>
+            int.TryParse(value, out categoryId) && categoryId > 0;
     }
 }

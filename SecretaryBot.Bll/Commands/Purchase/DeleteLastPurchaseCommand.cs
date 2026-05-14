@@ -16,7 +16,7 @@ namespace SecretaryBot.Bll.Commands.Purchase
 
         public async Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
-            await _logger.Info($"Received DeleteLastPurchaseAsync. UserId: {message.UserId}");
+            await _logger.InfoAsync($"Received DeleteLastPurchaseAsync. UserId: {message.UserId}");
             var responseText = await _purchaseService.DeleteLastPurchaseAsync(message.UserId);
             return new CommandResult(responseText);
         }

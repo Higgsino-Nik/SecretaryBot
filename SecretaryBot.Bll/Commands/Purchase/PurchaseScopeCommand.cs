@@ -9,14 +9,19 @@ namespace SecretaryBot.Bll.Commands.Purchase
         private readonly CommandFactory _commandFactory = commandFactory;
 
         public CommandScope Scope => CommandScope.None;
-        public string DisplayName => "Покупки";
+        public string DisplayName => "Траты";
         public string CallBack => "/purchase";
 
-        public async Task<CommandResult> InvokeAsync(TelegramMessage message)
+        public Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
             var purchaseCommands = _commandFactory.GetCommands(CommandScope.Purchase);
-            var buttons = await Task.Run(() => purchaseCommands.Select(command => new KeyboardButton { Text = command.DisplayName, CallBackMessage = command.CallBack }));
-            return new CommandResult("Траты", buttons);
+            var buttons = purchaseCommands.Select(command => new KeyboardButton
+            {
+                Text = command.DisplayName,
+                CallBackMessage = command.CallBack
+            });
+
+            return Task.FromResult(new CommandResult("Траты", buttons));
         }
     }
 }

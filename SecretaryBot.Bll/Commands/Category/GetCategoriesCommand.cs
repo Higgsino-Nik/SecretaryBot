@@ -17,7 +17,7 @@ namespace SecretaryBot.Bll.Commands.Category
 
         public async Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
-            await _logger.Info($"Received GetCategoriesAsync. UserId: {message.UserId}");
+            await _logger.InfoAsync($"Received GetCategoriesAsync. UserId: {message.UserId}");
             var responseText = await _categoryService.GetCategoriesAsync(message.UserId);
             return new CommandResult(responseText);
         }

@@ -8,12 +8,12 @@ namespace SecretaryBot.Dal.Repositories
     {
         private readonly PostgresContext _context = context;
 
-        public async Task Error(string message)
+        public async Task ErrorAsync(string message)
         {
             await WriteLogAsync(LogLevel.Error, message);
         }
 
-        public async Task Info(string message)
+        public async Task InfoAsync(string message)
         {
             await WriteLogAsync(LogLevel.Information, message);
         }

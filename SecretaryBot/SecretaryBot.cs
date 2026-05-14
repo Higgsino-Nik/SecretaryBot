@@ -1,10 +1,12 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using SecretaryBot.Domain;
 using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Exceptions;
 using SecretaryBot.Domain.Models;
+using SecretaryBot.Domain.Texts;
 using Telegram.Bot;
 using Telegram.Bot.Polling;
 using Telegram.Bot.Types;
@@ -12,40 +14,38 @@ using Telegram.Bot.Types.ReplyMarkups;
 
 namespace SecretaryBot
 {
-    public class SecretaryBot : IHostedService
+    public class SecretaryBot : BackgroundService
     {
         private readonly ITelegramBotClient _bot;
-        private readonly CommandsController _commandController;
-        private readonly ICustomLogger _logger;
+        private readonly IServiceScopeFactory _serviceScopeFactory;
 
-        public SecretaryBot(IConfiguration configuration, CommandsController commandsFactory, Domain.Abstractions.ICustomLogger logger)
+        public SecretaryBot(IConfiguration configuration, IServiceScopeFactory serviceScopeFactory)
         {
-            _commandController = commandsFactory;
-            _logger = logger;
+            _serviceScopeFactory = serviceScopeFactory;
 
             var botToken = configuration["SecretaryToken"];
-            _bot = new TelegramBotClient(botToken);
-            var receiverOptions = new ReceiverOptions
+            if (string.IsNullOrEmpty(botToken))
             {
-                AllowedUpdates = { }
-            };
-
-            _bot.StartReceiving(
-                    HandleUpdateAsync,
-                    HandleErrorAsync,
-                    receiverOptions,
-                    new CancellationTokenSource().Token
-                );
+                throw new ArgumentException("SecretaryToken was not configured");
+            }
+            
+            _bot = new TelegramBotClient(botToken);
+        }
+        
+        protected override Task ExecuteAsync(CancellationToken stoppingToken)
+        {
+            _bot.StartReceiving(HandleUpdateAsync, HandleErrorAsync, cancellationToken: stoppingToken);
+            return Task.CompletedTask;
         }
 
-        public async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
+        private async Task HandleUpdateAsync(ITelegramBotClient bot, Update update, CancellationToken cancellationToken)
         {
             try
             {
                 var message = update.Type switch
                 {
                     Telegram.Bot.Types.Enums.UpdateType.Message => new TelegramMessage(update.Message.From.Id, update.Message.Chat.Id, update.Message.Text),
-                    Telegram.Bot.Types.Enums.UpdateType.CallbackQuery => new TelegramMessage(update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Data),
+                    Telegram.Bot.Types.Enums.UpdateType.CallbackQuery => new TelegramMessage(update.CallbackQuery.From.Id, update.CallbackQuery.Message.Chat.Id, update.CallbackQuery.Data),
                     _ => throw new Exception("Unknown UpdateType")
                 };
                 await AnswerToMessageAsync(message);
@@ -56,20 +56,22 @@ namespace SecretaryBot
             }
             catch (Exception ex)
             {
-                await _logger.WriteLogAsync(LogLevel.Error, "Error while handling update message: " + ex.Message);
-                await bot.SendTextMessageAsync(update.Message?.Chat ?? update.CallbackQuery.Message.Chat, Constants.ErrorMessageResponse);
+                await WriteLogAsync(LogLevel.Error, "Error while handling update message: " + ex.Message);
+                await bot.SendTextMessageAsync(update.Message?.Chat ?? update.CallbackQuery?.Message?.Chat, BotMessages.ErrorMessage);
             }
         }
 
         public async Task HandleErrorAsync(ITelegramBotClient botClient, Exception exception, CancellationToken cancellationToken)
         {
-            await _logger.WriteLogAsync(LogLevel.Error, "Error received: " + exception.Message);
+            await WriteLogAsync(LogLevel.Error, "Error received: " + exception.Message);
             Environment.Exit(-1);
         }
 
         private async Task AnswerToMessageAsync(TelegramMessage message)
         {
-            var response = await _commandController.ResponseCommandAsync(message);
+            using var scope = _serviceScopeFactory.CreateScope();
+            var commandController = scope.ServiceProvider.GetRequiredService<CommandsController>();
+            var response = await commandController.ResponseCommandAsync(message);
 
             if (response.Buttons.Count > 0)
             {
@@ -83,8 +85,11 @@ namespace SecretaryBot
             }
         }
 
-        public Task StartAsync(CancellationToken cancellationToken) => Task.CompletedTask;
-
-        public Task StopAsync(CancellationToken cancellationToken) => Task.CompletedTask;
+        private async Task WriteLogAsync(LogLevel level, string message)
+        {
+            using var scope = _serviceScopeFactory.CreateScope();
+            var logger = scope.ServiceProvider.GetRequiredService<ICustomLogger>();
+            await logger.WriteLogAsync(level, message);
+        }
     }
 }

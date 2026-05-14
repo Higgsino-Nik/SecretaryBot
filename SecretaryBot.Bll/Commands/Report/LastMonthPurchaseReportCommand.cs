@@ -16,7 +16,7 @@ namespace SecretaryBot.Bll.Commands.Report
 
         public async Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
-            await _logger.Info($"Received LastMonthPurchaseReportAsync. UserId: {message.UserId}");
+            await _logger.InfoAsync($"Received LastMonthPurchaseReportAsync. UserId: {message.UserId}");
             var end = new DateTime(DateTime.Now.Year, DateTime.Now.Month, 1);
             var start = end.AddMonths(-1);
             var report = await _reportService.GetPurchaseReportAsync(message.UserId, start, end);

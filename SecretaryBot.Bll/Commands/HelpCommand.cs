@@ -2,6 +2,7 @@
 using SecretaryBot.Domain.Abstractions;
 using SecretaryBot.Domain.Enums;
 using SecretaryBot.Domain.Models;
+using SecretaryBot.Domain.Texts;
 
 namespace SecretaryBot.Bll.Commands
 {
@@ -15,8 +16,8 @@ namespace SecretaryBot.Bll.Commands
 
         public async Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
-            await _logger.Info($"Received help. UserId: {message.UserId}");
-            return new CommandResult(Constants.CommandsDocumentation);
+            await _logger.InfoAsync($"Received help. UserId: {message.UserId}");
+            return new CommandResult(CommandDocumentation.Commands);
         }
     }
 }

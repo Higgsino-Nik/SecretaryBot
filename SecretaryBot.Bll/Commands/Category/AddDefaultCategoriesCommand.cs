@@ -16,7 +16,7 @@ namespace SecretaryBot.Bll.Commands.Category
 
         public async Task<CommandResult> InvokeAsync(TelegramMessage message)
         {
-            await _logger.Info($"Received AddDefaultCategoriesAsync. UserId: {message.UserId}");
+            await _logger.InfoAsync($"Received AddDefaultCategoriesAsync. UserId: {message.UserId}");
             var result = await _categoryService.AddDefaultCategoriesAsync(message.UserId);
             var responseText = result is null
                 ? "Добавление категорий по умолчанию возможно только если на данный момент нет никаких категорий"

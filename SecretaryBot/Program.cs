@@ -37,17 +37,17 @@ namespace SecretaryBot
 
         private static IServiceCollection ConfigureDI(this IServiceCollection services)
         {
-            services.AddTransient<ICustomLogger, DbLogger>();
-            services.AddTransient<ICategoryRepository, CategoryRepository>();
-            services.AddTransient<IPurchaseRepository, PurchaseRepository>();
-            services.AddTransient<IUserRepository, UserRepository>();
-            services.AddTransient<ICacheService, CacheService>();
-            services.AddTransient<ICategoryService, CategoryService>();
-            services.AddTransient<IPurchaseService, PurchaseService>();
-            services.AddTransient<IUserService, UserService>();
-            services.AddTransient<IReportService, ReportService>();
+            services.AddScoped<ICustomLogger, DbLogger>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<IPurchaseRepository, PurchaseRepository>();
+            services.AddScoped<IUserRepository, UserRepository>();
+            services.AddSingleton<ICacheService, CacheService>();
+            services.AddScoped<ICategoryService, CategoryService>();
+            services.AddScoped<IPurchaseService, PurchaseService>();
+            services.AddScoped<IUserService, UserService>();
+            services.AddScoped<IReportService, ReportService>();
 
-            services.AddTransient<CommandFactory>();
+            services.AddScoped<CommandFactory>();
             var commandType = typeof(ICommand);
             var commandImplementations = AppDomain.CurrentDomain.GetAssemblies()
                 .SelectMany(x => x.GetTypes())
@@ -60,7 +60,7 @@ namespace SecretaryBot
             }
                 
 
-            services.AddTransient<CommandsController>();
+            services.AddScoped<CommandsController>();
             return services;
         }
 
@@ -69,7 +69,7 @@ namespace SecretaryBot
             AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
             var secretaryBotConnection = configuration.GetConnectionString("SecretaryBot");
             services.AddEntityFrameworkNpgsql().AddDbContext<PostgresContext>(options =>
-                options.UseNpgsql(secretaryBotConnection), ServiceLifetime.Transient);
+                options.UseNpgsql(secretaryBotConnection));
             return services;
         }
 
