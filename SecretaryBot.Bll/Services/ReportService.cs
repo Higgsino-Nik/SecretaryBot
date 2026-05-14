@@ -1,5 +1,6 @@
 ﻿using SecretaryBot.Domain.Abstractions.Repositories;
 using SecretaryBot.Domain.Abstractions.Services;
+using SecretaryBot.Domain.Models;
 
 namespace SecretaryBot.Bll.Services
 {
@@ -13,6 +14,13 @@ namespace SecretaryBot.Bll.Services
                 return "Дата начала для построения отчета должна быть меньше даты конца";
 
             var report = await _purchaseRepository.PurchaseReportAsync(userId, start, end);
+            var summary = new ReportRow
+            {
+                Name = "Итого",
+                Amount = report.Sum(x => x.Amount)
+            };
+            report.Add(summary);
+            
             return string.Join("\n", report.Select(row => row.ToString()));
         }
 
